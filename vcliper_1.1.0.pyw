@@ -417,8 +417,8 @@ def check_update(silent=False):
                 except Exception as e:
                     messagebox.showerror("Download Failed", f"Failed to download/update:\n{e}")
         else:
+            show_notification("vcliper", f"You're using the latest version (v{version})", 5)
             if not silent:
-                show_notification("vcliper", f"You're using the latest version (v{version})", 5)
                 messagebox.showinfo("Up to Date", f"You're using the latest version (v{version})")
 
     except urllib.error.HTTPError as e:
@@ -439,7 +439,7 @@ try:
         settings = json.load(f)
     auto_update = settings.get("options", {}).get("auto_update", False)
     if auto_update:
-        threading.Thread(target=check_update, kwargs={"silent": False}, daemon=True).start()
+        threading.Thread(target=check_update, kwargs={"silent": True}, daemon=True).start()
 except Exception as e:
     print(f"Auto update check failed: {e}")
 
