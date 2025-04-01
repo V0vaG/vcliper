@@ -10,7 +10,7 @@ from tkinter import messagebox, ttk
 import platform
 
 
-version = '1.0.13'
+version = '1.0.14'
 monitoring = False
 
 alias = "vcliper"
@@ -124,8 +124,6 @@ def replace_words(sentence, word_dict, case_sensitive):
     return modified
 
 
-
-
 def create_placeholder_dict(file_path):
     placeholder_dict = {
         "options": {
@@ -160,25 +158,45 @@ def load_dictionary(file_path):
         return {}, True
 
 
-def save_settings(case_sensitive_var, word_dict):
+def save_and_close():
+    # Add auto_update to the settings
     try:
-        data = {"options": {"case_sensitive": case_sensitive_var.get()}, "dictionary": word_dict}
+        data = {
+            "options": {
+            "case_sensitive": case_sensitive_var.get(),
+                "auto_update": auto_update_var.get()
+            },
+            "dictionary": word_dict
+        }
         with open(dictionary_path, 'w') as file:
             json.dump(data, file, indent=4)
+        show_notification("vcliper", "Settings saved successfully.", 5)
     except Exception as e:
         messagebox.showerror("Error", f"Failed to save settings: {e}")
-    # else:
-    # messagebox.showinfo("Success", "Settings saved successfully.")
-    show_notification("vcliper", "Settings saved successfully.", 5)
+    settings_window.destroy()
+
+    add_env_button = tk.Button(settings_window, text="Add Env", command=add_to_env)
+    add_env_button.pack(pady=5)
+
+    check_update_button = tk.Button(settings_window, text="Check Update", command=check_update)
+    check_update_button.pack(pady=5)
+
+    save_button = tk.Button(settings_window, text="Save & Close", command=save_and_close)
+    save_button.pack(pady=5)
 
 
 def open_settings():
     settings_window = tk.Toplevel(root)
     settings_window.title("Settings")
-    settings_window.geometry("400x350")
+    settings_window.geometry("400x400")
 
     word_dict, case_sensitive = load_dictionary(dictionary_path)
     case_sensitive_var = tk.BooleanVar(value=case_sensitive)
+
+    # Load auto update if available
+    with open(dictionary_path, "r") as f:
+        data = json.load(f)
+    auto_update_var = tk.BooleanVar(value=data.get("options", {}).get("auto_update", False))
 
     def delete_word():
         selected_item = tree.selection()
@@ -199,8 +217,16 @@ def open_settings():
             replacement_entry.delete(0, tk.END)
             save_settings(case_sensitive_var, word_dict)
 
+    def check_update():
+        # Placeholder logic for update checking
+        show_notification("vcliper", f"You're using version {version}. (Update check not implemented)", 5)
+        messagebox.showinfo("Check Update", f"You're using version {version}.\nUpdate check not implemented.")
+
     case_sensitive_check = tk.Checkbutton(settings_window, text="Case Sensitive", variable=case_sensitive_var)
     case_sensitive_check.pack(pady=5)
+
+    auto_update_check = tk.Checkbutton(settings_window, text="Auto Update", variable=auto_update_var)
+    auto_update_check.pack(pady=5)
 
     table_frame = tk.Frame(settings_window)
     table_frame.pack(pady=5, fill="both", expand=True)
@@ -230,14 +256,30 @@ def open_settings():
     delete_button.pack(pady=5)
 
     def save_and_close():
-        save_settings(case_sensitive_var, word_dict)
+        # Add auto_update to the settings
+        try:
+            data = {
+                "options": {
+                    "case_sensitive": case_sensitive_var.get(),
+                    "auto_update": auto_update_var.get()
+                },
+                "dictionary": word_dict
+            }
+            with open(dictionary_path, 'w') as file:
+                json.dump(data, file, indent=4)
+            show_notification("vcliper", "Settings saved successfully.", 5)
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to save settings: {e}")
         settings_window.destroy()
 
     add_env_button = tk.Button(settings_window, text="Add Env", command=add_to_env)
     add_env_button.pack(pady=5)
 
+    check_update_button = tk.Button(settings_window, text="Check Update", command=check_update)
+    check_update_button.pack(pady=5)
+
     save_button = tk.Button(settings_window, text="Save & Close", command=save_and_close)
-    save_button.pack()
+    save_button.pack(pady=5)
 
 
 def monitor_clipboard(dictionary_path):
