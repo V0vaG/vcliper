@@ -364,7 +364,10 @@ def check_update(silent=False):
             if answer:
                 download_url = file_map[latest_version]
                 filename = f"vcliper_{latest_version}.pyw"
-                download_path = os.path.join(os.getcwd(), filename)
+                # download_path = os.path.join(os.getcwd(), filename)
+                script_dir = os.path.dirname(os.path.abspath(__file__))
+                download_path = os.path.join(script_dir, filename)
+
 
                 try:
                     urllib.request.urlretrieve(download_url, download_path)
@@ -402,9 +405,6 @@ def check_update(silent=False):
 
                     elif platform.system() == "Windows":
                         import sys
-                        script_dir = os.path.dirname(os.path.abspath(__file__))
-                        download_path = os.path.join(script_dir, filename)
-
                         profile_path = os.path.join(os.getenv("USERPROFILE"), "Documents", "WindowsPowerShell", "Microsoft.PowerShell_profile.ps1")
                         function_line = f'function {alias} {{ & "{os.path.abspath(sys.argv[0])}" }}'
                         updated_line = f'function {alias} {{ & "{download_path}" }}'
