@@ -375,10 +375,12 @@ def check_update(silent=False):
 
                     # Update alias in bashrc (Linux) or PowerShell profile (Windows)
                     current_path = os.path.abspath(__file__)
-                    alias_line = f"alias {alias}='python3 {download_path}'"
 
                     if platform.system() == "Linux":
+                        script_path = os.path.abspath(__file__)
+                        alias_line = f"alias {alias}='nohup python3 {script_path} >/dev/null 2>&1 &'"
                         bashrc_path = os.path.expanduser("~/.bashrc")
+
                         if os.path.exists(bashrc_path):
                             with open(bashrc_path, "r") as f:
                                 lines = f.readlines()
@@ -399,9 +401,14 @@ def check_update(silent=False):
 
                             with open(bashrc_path, "w") as f:
                                 f.writelines(new_lines)
+
+                            print(f"{'Updated' if updated else 'Added'} alias in {bashrc_path}")
                         else:
+                            os.makedirs(os.path.dirname(bashrc_path), exist_ok=True)
                             with open(bashrc_path, "w") as f:
                                 f.write(alias_line + "\n")
+                            print(f"Alias created in new {bashrc_path}")
+
 
                     elif platform.system() == "Windows":
                         import sys
