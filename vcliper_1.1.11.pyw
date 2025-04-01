@@ -12,7 +12,7 @@ import urllib.request
 import urllib.error
 
 
-version = '1.1.10'
+version = '1.1.11'
 monitoring = False
 
 alias = "vcliper"
