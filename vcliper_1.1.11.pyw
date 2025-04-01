@@ -99,7 +99,7 @@ def add_to_env():
                 f.write(alias_line + "\n")
             print(f"Alias created in new {bashrc_path}")
 
-add_to_env()
+# add_to_env()
 
 def show_notification(title, message, timeout=5):
     if platform.system().lower() == "windows":
