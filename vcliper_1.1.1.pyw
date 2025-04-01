@@ -431,7 +431,6 @@ def check_update(silent=False):
         if not silent:
             messagebox.showerror("Update Error", f"Failed to check for updates:\n{e}")
 
-
 root = tk.Tk()
 
 # Load auto_update setting from dictionary
