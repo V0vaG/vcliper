@@ -8,9 +8,11 @@ import threading
 import tkinter as tk
 from tkinter import messagebox, ttk
 import platform
+import urllib.request
+import urllib.error
 
 
-version = '1.0.14'
+version = '10.0.15'
 monitoring = False
 
 alias = "vcliper"
@@ -217,10 +219,6 @@ def open_settings():
             replacement_entry.delete(0, tk.END)
             save_settings(case_sensitive_var, word_dict)
 
-    def check_update():
-        # Placeholder logic for update checking
-        show_notification("vcliper", f"You're using version {version}. (Update check not implemented)", 5)
-        messagebox.showinfo("Check Update", f"You're using version {version}.\nUpdate check not implemented.")
 
     case_sensitive_check = tk.Checkbutton(settings_window, text="Case Sensitive", variable=case_sensitive_var)
     case_sensitive_check.pack(pady=5)
@@ -314,7 +312,60 @@ def toggle_monitoring():
         show_notification("vcliper", "Starting monitoring", 5)
 
 
+def check_update(silent=False):
+    try:
+        url = "https://api.github.com/repos/V0vaG/vcliper/contents"
+        headers = {"User-Agent": "vcliper-update-checker"}
+        req = urllib.request.Request(url, headers=headers)
+        with urllib.request.urlopen(req) as response:
+            contents = json.loads(response.read().decode())
+
+        version_pattern = re.compile(r'vcliper_(\d+\.\d+\.\d+)\.pyw')
+        versions_found = []
+
+        for item in contents:
+            if item['type'] == 'file':
+                match = version_pattern.match(item['name'])
+                if match:
+                    versions_found.append(match.group(1))
+
+        if not versions_found:
+            raise Exception("No version files found.")
+
+        from packaging import version as pkg_version
+        latest_version = max(versions_found, key=lambda v: pkg_version.parse(v))
+
+        if pkg_version.parse(latest_version) > pkg_version.parse(version):
+            show_notification("vcliper", f"Update available: v{latest_version}", 5)
+            messagebox.showinfo("Update Available", f"A new version (v{latest_version}) is available on GitHub.\nVisit:\nhttps://github.com/V0vaG/vcliper")
+        else:
+            if not silent:
+                show_notification("vcliper", f"You're using the latest version (v{version})", 5)
+                # messagebox.showinfo("Up to Date", f"You're using the latest version (v{version})")
+
+    except urllib.error.HTTPError as e:
+        if not silent:
+            messagebox.showerror("Update Error", f"HTTP Error: {e.code}")
+    except urllib.error.URLError as e:
+        if not silent:
+            messagebox.showerror("Update Error", f"Network Error: {e.reason}")
+    except Exception as e:
+        if not silent:
+            messagebox.showerror("Update Error", f"Failed to check for updates: {e}")
+
+
 root = tk.Tk()
+
+# Load auto_update setting from dictionary
+try:
+    with open(dictionary_path, "r") as f:
+        settings = json.load(f)
+    auto_update = settings.get("options", {}).get("auto_update", False)
+    if auto_update:
+        threading.Thread(target=check_update, kwargs={"silent": False}, daemon=True).start()
+except Exception as e:
+    print(f"Auto update check failed: {e}")
+
 root.title("Clipboard Monitor")
 root.geometry("300x250")
 
