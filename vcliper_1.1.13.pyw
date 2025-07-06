@@ -13,9 +13,10 @@ import urllib.error
 
 from plyer import notification  # Required for Windows notifications
 
+# pip3 install plyer
 
 
-
+alarm = "/usr/share/sounds/freedesktop/stereo/alarm-clock-elapsed.oga"
 version = '1.1.13'
 monitoring = False
 
@@ -111,14 +112,14 @@ def play_alarm():
     if platform.system().lower() == "windows":
         import winsound
         winsound.Beep(1000, 700)  # frequency, duration in ms
-    elif platform.system() == "linux":
-        # Replace with your preferred command or audio file
-        subprocess.run(["paplay", "/usr/share/sounds/freedesktop/stereo/alarm-clock-elapsed.oga"])
+    elif platform.system().lower() == "linux":
+        if platform.system().lower() == "linux":
+            # Try paplay
+                subprocess.run([
+        "paplay", alarm
+    ])
 
 def show_notification(title, message, timeout=5):
-    # Play alarm in a separate thread to avoid blocking
-    threading.Thread(target=play_alarm).start()
-
     if platform.system().lower() == "windows":
         notification.notify(
             title=title,
@@ -155,6 +156,9 @@ def replace_words(sentence, word_dict, case_sensitive):
     modified = re.sub(r'\b\w+\b', replace_word, sentence)
 
     if replacements:
+        # Play alarm in a separate thread to avoid blocking
+        threading.Thread(target=play_alarm).start()
+
         print("Replacements made:", ", ".join(f"'{orig}' → '{new}'" for orig, new in replacements))
         show_notification("vcliper", "Replacements made:, ".join(f"'{orig}' → '{new}'" for orig, new in replacements), 5)
 
